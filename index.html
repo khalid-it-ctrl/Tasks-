@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" href="file_0000000059b86230aa166e4f3b33bbc0.png">
+    <title>مهامى </title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background:color#b5d32f09;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1000px;
+            background: url(ff.jpg) no-repeat center center fixed;
+            padding: 40px;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+            overflow-y: auto;
+            height: 80vh;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            font-size: 2.5em;
+            margin-bottom: 20px;
+        }
+
+        .input-container {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            align-items: center;
+        }
+
+        .input-container input, .input-container button, .input-container select {
+            width: 30%;
+            padding: 10px;
+            font-size: 16px;
+            border-radius: 5px;
+            border: 1px solid #ccccccb7;
+        }
+
+        .input-container button {
+            background-color: #4caf4f09;
+            color: rgba(255, 255, 255, 0.185);
+            cursor: pointer;
+        }
+
+        .input-container button:hover {
+            background-color: #13871971;
+        }
+
+        .task-list {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .task-item {
+            background-color: #b5a52c52;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 1px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .task-item button {
+            background-color: #f443364b;
+            color: rgba(255, 255, 255, 0.336);
+            border: none;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .task-item button:hover {
+            background-color: #d32f2f;
+        }
+
+        .statistics {
+            margin-top: 30px;
+            padding: 20px;
+            background-color: #f1f1f169;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .statistics h2 {
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .statistics ul {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        .statistics ul li {
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>مهامى - ادارة مهامى</h1>
+
+    <div class="input-container">
+        <input type="text" id="task-input" placeholder="Enter a new task">
+        <input type="datetime-local" id="task-time">
+        <button id="add-task-button">Add Task</button>
+    </div>
+
+    <ul id="task-list" class="task-list"></ul>
+
+    <div class="statistics">
+        <h2>Time Statistics</h2>
+        <ul id="statistics-list">
+            <li>Total Tasks: <span id="total-tasks">0</span></li>
+            <li>Completed Tasks: <span id="completed-tasks">0</span></li>
+            <li>Pending Tasks: <span id="pending-tasks">0</span></li>
+        </ul>
+    </div>
+</div>
+
+<script>
+    // Load tasks from localStorage
+    function loadTasks() {
+        const tasks = JSON.parse(localStorage.getItem('tasks')) || [];
+        const taskList = document.getElementById('task-list');
+        const totalTasks = document.getElementById('total-tasks');
+        const completedTasks = document.getElementById('completed-tasks');
+        const pendingTasks = document.getElementById('pending-tasks');
+
+        taskList.innerHTML = '';
+
+        let completedCount = 0;
+        tasks.forEach((task, index) => {
+            const taskItem = document.createElement('li');
+            taskItem.className = 'task-item';
+            taskItem.innerHTML = `${task.text} <br><strong>Due:</strong> ${task.dueDate} 
+                                  <button onclick="deleteTask(${index})">Delete</button>
+                                  <button onclick="toggleComplete(${index})">${task.completed ? 'Undo' : 'Complete'}</button>`;
+            if (task.completed) completedCount++;
+
+            taskList.appendChild(taskItem);
+        });
+
+        totalTasks.textContent = tasks.length;
+        completedTasks.textContent = completedCount;
+        pendingTasks.textContent = tasks.length - completedCount;
+    }
+
+    // Save tasks to localStorage
+    function saveTasks(tasks) {
+        localStorage.setItem('tasks', JSON.stringify(tasks));
+        loadTasks();
+    }
+
+    // Add a new task
+    function addTask() {
+        const taskInput = document.getElementById('task-input');
+        const taskTime = document.getElementById('task-time');
+        const taskText = taskInput.value.trim();
+        const taskDueDate = taskTime.value;
+
+        if (taskText && taskDueDate) {
+            const tasks = JSON.parse(localStorage.getItem('tasks')) || [];
+            tasks.push({ text: taskText, dueDate: taskDueDate, completed: false });
+            saveTasks(tasks);
+            taskInput.value = '';
+            taskTime.value = '';
+        }
+    }
+
+    // Delete a task
+    function deleteTask(index) {
+        const tasks = JSON.parse(localStorage.getItem('tasks')) || [];
+        tasks.splice(index, 1);
+        saveTasks(tasks);
+    }
+
+    // Toggle task completion status
+    function toggleComplete(index) {
+        const tasks = JSON.parse(localStorage.getItem('tasks')) || [];
+        tasks[index].completed = !tasks[index].completed;
+        saveTasks(tasks);
+    }
+
+    // Event listener for adding task
+    document.getElementById('add-task-button').addEventListener('click', addTask);
+
+    // Load tasks on page load
+    window.onload = loadTasks;
+</script>
+
+</body>
+</html>
